@@ -1,42 +1,99 @@
-# Scoop Bucket Template
+# Vyne Scoop bucket
 
-<!-- Uncomment the following line after replacing placeholders -->
-<!-- [![Tests](https://github.com/<username>/<bucketname>/actions/workflows/ci.yml/badge.svg)](https://github.com/<username>/<bucketname>/actions/workflows/ci.yml) [![Excavator](https://github.com/<username>/<bucketname>/actions/workflows/excavator.yml/badge.svg)](https://github.com/<username>/<bucketname>/actions/workflows/excavator.yml) -->
+Scoop manifests for [Vyne](https://github.com/t2ncay/vyne), a scientific numerical
+language with native compilation, device computing, embedded firmware, plotting,
+and desktop graphics.
 
-Template bucket for [Scoop](https://scoop.sh), the Windows command-line installer.
+Bucket repository: **https://github.com/t2ncay/scoop-vyne**
 
-## How do I use this template?
+## Install
 
-1. Generate your own copy of this repository with the "Use this template"
-   button.
-2. Allow all GitHub Actions:
-   - Navigate to `Settings` - `Actions` - `General` - `Actions permissions`.
-   - Select `Allow all actions and reusable workflows`.
-   - Then `Save`.
-3. Workflow permissions:
-   - Navigate to `Settings` - `Actions` - `General` - `Workflow permissions`.
-   - Ensure `Read repository contents and packages permissions` is selected.
-   - Then `Save`.
-4. Document the bucket in `README.md`.
-5. Replace the placeholder repository string in `bin/auto-pr.ps1`.
-6. Create new manifests by copying `bucket/app-name.json.template` to
-   `bucket/<app-name>.json`.
-7. Commit and push changes.
-8. If you'd like your bucket to be indexed on `https://scoop.sh`, add the
-   topic `scoop-bucket` to your repository.
+Once the release package and completed manifest have been published:
 
-## How do I install these manifests?
-
-After manifests have been committed and pushed, run the following:
-
-```pwsh
-scoop bucket add <bucketname> https://github.com/<username>/<bucketname>
-scoop install <bucketname>/<manifestname>
+```powershell
+scoop bucket add vyne https://github.com/t2ncay/scoop-vyne
+scoop install vyne/vyne
+vynec --version
 ```
 
-## How do I contribute new manifests?
+GCC is installed as a dependency because Vyne's default execution path compiles
+and runs programs. CMake is suggested for raylib graphics; Arduino CLI is
+suggested for ESP32/AVR firmware. Windows graphics also require a toolchain
+providing `mingw32-make`.
 
-To make a new manifest contribution, please read the [Contributing
-Guide](https://github.com/ScoopInstaller/.github/blob/main/.github/CONTRIBUTING.md)
-and [App Manifests](https://github.com/ScoopInstaller/Scoop/wiki/App-Manifests)
-wiki page.
+## Manifest status
+
+`bucket/vyne.json` is a **draft**, adapted from `bucket/app-name.json.template`.
+Its version, download URL and SHA256 are intentionally empty. At preparation
+time, Vyne's latest release (`v0.7.0`) has no downloadable assets. These fields
+must describe a real, tested Windows release before installation can work.
+
+The proposed release filename convention is:
+
+```text
+vyne-VERSION-windows-x64.zip
+```
+
+The `autoupdate` URL assumes that convention and `vVERSION` GitHub release tags.
+Adjust it if the actual release naming differs. Build the executable and its
+runtime/modules from the same tag. A release of current main features should use
+the appropriate new version rather than relabel an older tagged build.
+
+### Complete the Vyne package
+
+Publish the Windows ZIP in **t2ncay/vyne Releases**, not in this bucket. Preserve
+the installation layout required by `vynec.exe`, including runtime headers,
+external modules, `share/vyne` templates/hardware data, required vendored files,
+licenses, and runtime DLLs. An executable-only archive is insufficient for
+compilation, imports, initialization and native graphics builds.
+
+Fill in these fields in `bucket/vyne.json`:
+
+- `version`: the packaged release version, without the tag's leading `v`.
+- `architecture.64bit.url`: the published release asset URL.
+- `architecture.64bit.hash`: the ZIP's SHA256.
+
+```powershell
+(Get-FileHash -Algorithm SHA256 .\vyne-VERSION-windows-x64.zip).Hash.ToLower()
+```
+
+The manifest's `bin` creates a `vynec` shim. It does not add the entire package
+directory to PATH. Only x64 is declared; add other architectures after publishing
+and testing matching packages.
+
+## Add another manifest
+
+```powershell
+Copy-Item bucket/app-name.json.template bucket/app-name.json
+```
+
+Replace the template fields with the application's actual metadata, supported
+architectures, URLs, hashes, dependencies and executable names. Remove unused
+fields. See Scoop's [App Manifests guide](https://github.com/ScoopInstaller/Scoop/wiki/App-Manifests).
+
+## Test before publishing
+
+From a completed bucket checkout with Scoop installed:
+
+```powershell
+Get-Content bucket/vyne.json -Raw | ConvertFrom-Json
+scoop install .\bucket\vyne.json
+vynec --version
+vynec --help
+```
+
+Test a compiled program, external imports, project initialization, PNG plotting,
+and the first native graphics build on a clean Windows machine. Verify update
+and uninstall behavior too. Keep the helper scripts and workflows supplied by
+[Scoop's BucketTemplate](https://github.com/ScoopInstaller/BucketTemplate).
+
+`bin/auto-pr.ps1` targets **`t2ncay/scoop-vyne:master`**, matching this bucket's
+default branch. Its upstream Scoop helper is invoked only when you run the script.
+
+## Publish and index
+
+Copy these prepared files to the root of your **scoop-vyne** checkout. Complete
+and test the release manifest before committing/pushing it there.
+
+To request indexing, open the repository's About settings on GitHub and add the
+topic **`scoop-bucket`**. This preparation does not change GitHub settings.

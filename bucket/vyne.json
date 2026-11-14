@@ -1,0 +1,34 @@
+{
+  "##": "Draft adapted from app-name.json.template. Set version, published Windows ZIP URL and SHA256 before installation or publication.",
+  "version": "0.7.0",
+  "description": "Scientific numerical language with region-based memory, native compilation, device computing and embedded firmware.",
+  "homepage": "https://t2ncay.github.io/vyne/",
+  "license": "AGPL-3.0-only,MIT",
+  "architecture": {
+    "64bit": {
+      "url": "",
+      "hash": ""
+    }
+  },
+  "bin": "vynec.exe",
+  "depends": "main/gcc",
+  "suggest": {
+    "Desktop graphics": "main/cmake",
+    "Embedded firmware": "main/arduino-cli"
+  },
+  "notes": [
+    "GCC is required for the default compile-and-run workflow.",
+    "Desktop raylib builds need CMake and mingw32-make on PATH.",
+    "Use vynec hardware setup inside an initialized embedded project to install its core and libraries."
+  ],
+  "checkver": {
+    "github": "https://github.com/t2ncay/vyne"
+  },
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/t2ncay/vyne/releases/download/v$version/vyne-$version-windows-x64.zip"
+      }
+    }
+  }
+}
