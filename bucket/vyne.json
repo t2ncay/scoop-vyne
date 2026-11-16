@@ -10,7 +10,7 @@
             "hash": "95b554f642f6b80482f9eb66cc3d705caa2e0432e4054b15d6ba5f14da88f8e0"
         }
     },
-    "bin": "vynec.exe",
+    "bin": "vyne-0.8.0-windows-x64/vynec.exe",
     "depends": "main/gcc",
     "suggest": {
         "Desktop graphics": "main/cmake",
